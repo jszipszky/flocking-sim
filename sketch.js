@@ -14,6 +14,11 @@ function setup() {
     clearButton.attribute('id','clearButton');
 	clearButton.mousePressed(clearBoids);
 	
+	let spawnXButton = createButton('Spawn x3');
+	spawnXButton.style('z-index', 0);
+	spawnXButton.attribute('id', 'spawnX');
+	spawnXButton.mousePressed(spawnX);
+
 	let specialAdd = createButton('Spawn Special');
 	specialAdd.style('z-index', 0);
 	specialAdd.attribute('id', 'specialAdd');
@@ -26,9 +31,9 @@ function draw() {
 		boid.show();
 		boid.update(boids);
 	}
-	if (mouseIsPressed && keyIsDown(CONTROL)) {
+	/*if (mouseIsPressed && keyIsDown(CONTROL)) {
 		spawnBoids(1);
-	}
+	}*/
 }
 
 
@@ -39,6 +44,12 @@ function clearBoids() {
 function spawnSpecial() {
 	boids.push(new Boid(width / 2, height / 2));
 	boids[boids.length - 1].makeSpecial();
+}
+
+function spawnX() {
+	for (let i = 0; i < 3; i++) {
+		boids.push(new Boid(random(0, width), random(0, height)));
+	}
 }
 
 function spawnBoids(num) {
