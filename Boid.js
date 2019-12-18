@@ -49,6 +49,13 @@ class Boid {
         this.drawVectors = true;
     }
 
+    makeNormal() {
+        this.r = random(175, 235);
+        this.g = random(175, 235);
+        this.b = random(205, 255);
+        this.drawVectors = false;
+    }
+
     update(boids) {
         this.edges();
     

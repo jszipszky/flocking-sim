@@ -1,4 +1,6 @@
 var boids = [];
+var specialIndecies = [];
+var isSpecial = false;
 var canvas;
 
 function windowResized() {
@@ -23,6 +25,11 @@ function setup() {
 	specialAdd.style('z-index', 0);
 	specialAdd.attribute('id', 'specialAdd');
 	specialAdd.mousePressed(spawnSpecial);
+
+	let specialClear = createButton('Toggle Specials');
+	specialClear.style('z-index', 0);
+	specialClear.attribute('id', 'specialClear');
+	specialClear.mousePressed(toggleSpecials);
 }
 
 function draw() {
@@ -39,11 +46,27 @@ function draw() {
 
 function clearBoids() {
 	boids = [];
+	specialIndecies = [];
 }
 
 function spawnSpecial() {
 	boids.push(new Boid(width / 2, height / 2));
 	boids[boids.length - 1].makeSpecial();
+	specialIndecies.push(boids.length - 1);
+	isSpecial = true;
+}
+
+function toggleSpecials() {
+	if (specialIndecies.length > 0) {
+		isSpecial = !isSpecial;
+	}
+	for (let i of specialIndecies) {
+		if (isSpecial) {
+			boids[i].makeSpecial();
+		} else {
+			boids[i].makeNormal();
+		}
+	}
 }
 
 function spawnX() {
