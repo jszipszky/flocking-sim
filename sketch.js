@@ -31,9 +31,9 @@ function draw() {
 		boid.show();
 		boid.update(boids);
 	}
-	/*if (mouseIsPressed && keyIsDown(CONTROL)) {
+	if (mouseIsPressed && keyIsDown(CONTROL)) {
 		spawnBoids(1);
-	}*/
+	}
 }
 
 
