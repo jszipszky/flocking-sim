@@ -11,20 +11,24 @@ class Boid {
         this.drawVectors = false;
 
         this.visualMultiplier = 150;
-        this.maxSteeringForce = .25;
-        this.minSpeed = 4.5;
-        this.maxSpeed = 9;
-        this.perception = 150;
-        this.separation = 60;
+
+        this.scale = .75;
+
+        this.maxSteeringForce = .25 * this.scale;
+        this.minSpeed = 4.5 * this.scale;
+        this.maxSpeed = 9 * this.scale;
+        this.perception = 150 * this.scale;
+        this.separation = 60 * this.scale;
         this.colisionForceMult = 1.5;
         this.colisionDistMult = 2;
         this.perceptionColor = color(44, 228, 215, 255);
         this.separationColor = color(255, 14, 16, 255);
+        this.strokeWeight = 10 * this.scale;
     }
 
     show() {
         push();
-        strokeWeight(10);
+        strokeWeight(this.strokeWeight);
         stroke(this.r,this.g,this.b);
         translate(this.position.x, this.position.y);
         let x1 = 0;
@@ -56,10 +60,12 @@ class Boid {
         this.drawVectors = false;
     }
 
-    update(boids) {
+    update(boids, isPaused) {
         this.edges();
     
-        this.acceleration = this.getAcceleration();
+        let accel = this.getAcceleration(boids);
+
+        this.acceleration = isPaused ? createVector(0, 0) : accel;
 
         this.velocity.add(this.acceleration);
         let speed = this.velocity.mag();
@@ -71,7 +77,7 @@ class Boid {
         this.position.add(this.velocity);
     }
 
-    getAcceleration() {
+    getAcceleration(boids) {
         let alignmentForce = createVector(0, 0);
         let alignmentAvg = createVector(0, 0);
         let cohesionForce = createVector(0, 0);
@@ -82,20 +88,29 @@ class Boid {
         let separationAvg = createVector(0, 0);
         let separationNum = 0;
 
-        for (let boid of boids) {
+        for (let p of boids) {
+            let boid = p;
+            if (usingQuadtree) {
+                boid = p.userData;
+            }
             let d = dist(this.position.x, this.position.y, boid.position.x, boid.position.y);
+            let comp = p5.Vector.sub(boid.position, this.position);
             if (boid != this) {
                 if (d <= this.perception) {
                     coheseAlignNum++;
+
                     alignmentAvg.add(boid.velocity);
                     cohesionAvg.add(boid.position);
                 }
                 if (d <= this.separation) {
                     separationNum++;
-
+    
                     let v = p5.Vector.sub(this.position, boid.position);
                     v.div(Math.pow(d, this.colisionDistMult));
                     separationAvg.add(v);
+                }
+                if (this.drawVectors) {
+                    this.drawArrow(this.position, comp, color(195,255,195,105), 2)
                 }
             }
         }
@@ -122,25 +137,25 @@ class Boid {
 
         if (this.drawVectors) {
             let v = p5.Vector.mult(alignmentForce, this.visualMultiplier);
-            this.drawArrow(this.position, v, 'purple');
+            this.drawArrow(this.position, v, 'purple', 3);
             v = p5.Vector.mult(cohesionForce, this.visualMultiplier);
-            this.drawArrow(this.position, v, 'green');
+            this.drawArrow(this.position, v, 'green', 3);
             v = p5.Vector.mult(separationForce, this.visualMultiplier);
-            this.drawArrow(this.position, v, 'red');
+            this.drawArrow(this.position, v, 'red', 3);
         }
 
         return alignmentForce.add(cohesionForce.add(separationForce));
     }
 
-    drawArrow(base, vec, myColor) {
+    drawArrow(base, vec, myColor, weight) {
         push();
         stroke(myColor);
-        strokeWeight(3);
+        strokeWeight(weight);
         fill(myColor);
         translate(base.x, base.y);
         line(0, 0, vec.x, vec.y);
         rotate(vec.heading());
-        let arrowSize = 7;
+        let arrowSize = weight * 2 + 1;
         translate(vec.mag() - arrowSize, 0);
         triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0);
         pop();
@@ -150,7 +165,7 @@ class Boid {
         push();
         ellipseMode(RADIUS);
         stroke(myColor);
-        strokeWeight(2);
+        strokeWeight(4);
         myColor.setAlpha(50);
         fill(myColor);
         ellipse(base.x, base.y, radius, radius);
